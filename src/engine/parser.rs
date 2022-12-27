@@ -2,9 +2,9 @@ use crate::engine::parser::ParserError::InvalidEscape;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::mem::take;
-use std::task::Context;
 
 #[derive(Debug, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum AST {
     Char(char),
     Plus(Box<AST>),
@@ -24,7 +24,7 @@ pub enum ParserError {
 
 impl Display for ParserError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f, "{:?}", self)
     }
 }
 
@@ -38,6 +38,7 @@ fn parse_escape(pos: usize, c: char) -> Result<AST, ParserError> {
 }
 
 #[derive(Debug)]
+#[allow(clippy::upper_case_acronyms)]
 enum PSQ {
     Plus,
     Star,

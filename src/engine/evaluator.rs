@@ -1,5 +1,4 @@
 use crate::engine::{Code, Instruction};
-use crate::helper::DynError;
 use std::fmt::Display;
 
 pub fn eval(code: &Code, line: &[char], is_depth: bool) -> Result<bool, EvalError> {
@@ -11,6 +10,7 @@ pub fn eval(code: &Code, line: &[char], is_depth: bool) -> Result<bool, EvalErro
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum EvalError {
     PCOverFlow,
     SPOverFlow,
@@ -40,14 +40,14 @@ fn eval_depth(
     mut sp: usize,
 ) -> Result<bool, EvalError> {
     loop {
-        let next = inst.get(pc).ok_or_else(|| EvalError::InvalidPC)?;
+        let next = inst.get(pc).ok_or(EvalError::InvalidPC)?;
 
         match next {
             Instruction::Char(c) => {
-                let sp_c = line.get(sp).ok_or_else(|| EvalError::SPOverFlow)?;
+                let sp_c = line.get(sp).ok_or(EvalError::SPOverFlow)?;
                 if *c == *sp_c {
-                    pc = pc.checked_add(1).ok_or_else(|| EvalError::PCOverFlow)?;
-                    sp = sp.checked_add(1).ok_or_else(|| EvalError::SPOverFlow)?;
+                    pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                    sp = sp.checked_add(1).ok_or(EvalError::SPOverFlow)?;
                 } else {
                     return Ok(false);
                 }
@@ -70,6 +70,7 @@ fn eval_depth(
     }
 }
 
+#[allow(unused_variables, unused_mut)]
 fn eval_width(
     inst: &[Instruction],
     line: &[char],

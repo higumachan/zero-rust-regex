@@ -1,5 +1,4 @@
 use std::fmt::{Display, Formatter};
-use std::ptr::write;
 
 pub(crate) mod codegen;
 pub(crate) mod evaluator;

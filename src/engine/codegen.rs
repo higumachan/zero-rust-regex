@@ -1,5 +1,4 @@
 use crate::engine::parser::AST;
-use crate::engine::Instruction::{Char, Split};
 use crate::engine::{Code, Instruction};
 use std::fmt::Display;
 
@@ -12,6 +11,7 @@ pub fn get_code(ast: &AST) -> Result<Code, CodeGenError> {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum CodeGenError {
     PcOverFlow,
     FailStar,
@@ -46,10 +46,7 @@ impl Generator {
     }
 
     fn inc_pc(&mut self) -> Result<(), CodeGenError> {
-        self.pc = self
-            .pc
-            .checked_add(1)
-            .ok_or_else(|| CodeGenError::PcOverFlow)?;
+        self.pc = self.pc.checked_add(1).ok_or(CodeGenError::PcOverFlow)?;
 
         Ok(())
     }
