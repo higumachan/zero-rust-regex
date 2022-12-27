@@ -1,7 +1,15 @@
 use crate::engine::parser::AST;
-use crate::engine::Instruction;
 use crate::engine::Instruction::{Char, Split};
+use crate::engine::{Code, Instruction};
 use std::fmt::Display;
+
+pub fn get_code(ast: &AST) -> Result<Code, CodeGenError> {
+    let mut generator = Generator::new();
+
+    generator.gen_code(ast)?;
+
+    Ok(Code(generator.instructions))
+}
 
 #[derive(Debug)]
 pub enum CodeGenError {

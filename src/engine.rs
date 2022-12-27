@@ -1,7 +1,27 @@
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
+use std::ptr::write;
 
-mod codegen;
-pub mod parser;
+pub(crate) mod codegen;
+pub(crate) mod evaluator;
+pub(crate) mod parser;
+
+#[derive(Debug, PartialEq)]
+pub struct Code(Vec<Instruction>);
+
+impl Display for Code {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for (i, inst) in self.0.iter().enumerate() {
+            writeln!(f, "{}: {}", i, inst)?;
+        }
+        Ok(())
+    }
+}
+
+impl Code {
+    pub fn instractions(&self) -> &Vec<Instruction> {
+        &self.0
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub enum Instruction {
