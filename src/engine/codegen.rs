@@ -54,6 +54,9 @@ impl Generator {
     fn gen_expr(&mut self, ast: &AST) -> Result<(), CodeGenError> {
         match ast {
             AST::Char(c) => self.gen_char(*c)?,
+            AST::AnyChar => self.gen_anychar()?,
+            AST::Dollar(ast) => self.gen_dollar(ast)?,
+            AST::Hat(ast) => self.gen_hat(ast)?,
             AST::Or(ast1, ast2) => self.gen_or(ast1, ast2)?,
             AST::Plus(ast) => self.gen_plus(ast)?,
             AST::Star(ast) => self.gen_star(ast)?,
@@ -66,6 +69,26 @@ impl Generator {
 
     fn gen_char(&mut self, c: char) -> Result<(), CodeGenError> {
         self.instructions.push(Instruction::Char(c));
+        self.inc_pc()?;
+        Ok(())
+    }
+
+    fn gen_anychar(&mut self) -> Result<(), CodeGenError> {
+        self.instructions.push(Instruction::AnyChar);
+        self.inc_pc()?;
+        Ok(())
+    }
+
+    fn gen_hat(&mut self, expr: &AST) -> Result<(), CodeGenError> {
+        self.instructions.push(Instruction::IsHead);
+        self.inc_pc()?;
+        self.gen_expr(expr)?;
+        Ok(())
+    }
+
+    fn gen_dollar(&mut self, expr: &AST) -> Result<(), CodeGenError> {
+        self.gen_expr(expr)?;
+        self.instructions.push(Instruction::IsTail);
         self.inc_pc()?;
         Ok(())
     }
@@ -137,7 +160,17 @@ impl Generator {
         Ok(())
     }
 
+    fn gen_skip_head(&mut self) -> Result<(), CodeGenError> {
+        assert_eq!(self.pc, 0);
+        self.instructions.push(Instruction::Split(3, 1));
+        self.instructions.push(Instruction::AnyChar);
+        self.instructions.push(Instruction::Jump(0));
+
+        Ok(())
+    }
+
     fn gen_code(&mut self, ast: &AST) -> Result<(), CodeGenError> {
+        self.gen_skip_head()?;
         self.gen_expr(ast)?;
         self.instructions.push(Instruction::Match);
         self.inc_pc()?;

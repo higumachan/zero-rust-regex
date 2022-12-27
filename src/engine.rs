@@ -25,6 +25,9 @@ impl Code {
 #[derive(Debug, PartialEq)]
 pub enum Instruction {
     Char(char),
+    AnyChar,
+    IsHead,
+    IsTail,
     Match,
     Jump(usize),
     Split(usize, usize),
@@ -35,6 +38,9 @@ impl Display for Instruction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Instruction::Char(c) => write!(f, "char {} ", c),
+            Instruction::AnyChar => write!(f, "anychar"),
+            Instruction::IsHead => write!(f, "ishead"),
+            Instruction::IsTail => write!(f, "istail"),
             Instruction::Match => write!(f, "match"),
             Instruction::Jump(i) => write!(f, "jump {:>04}", i),
             Instruction::Split(i, j) => write!(f, "Split {:>04}, {:>04}", i, j),

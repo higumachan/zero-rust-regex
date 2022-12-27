@@ -7,6 +7,9 @@ use std::mem::take;
 #[allow(clippy::upper_case_acronyms)]
 pub enum AST {
     Char(char),
+    AnyChar,
+    Dollar(Box<AST>),
+    Hat(Box<AST>),
     Plus(Box<AST>),
     Star(Box<AST>),
     Question(Box<AST>),
@@ -17,6 +20,8 @@ pub enum AST {
 #[derive(Debug)]
 pub enum ParserError {
     InvalidEscape(usize, char),
+    InvalidHat,
+    InvalidDollar,
     NoPrev(usize),
     NoRightParen,
     Empty,
@@ -32,7 +37,7 @@ impl Error for ParserError {}
 
 fn parse_escape(pos: usize, c: char) -> Result<AST, ParserError> {
     match c {
-        '\\' | '(' | ')' | '|' | '*' | '+' | '?' => Ok(AST::Char(c)),
+        '\\' | '(' | ')' | '|' | '*' | '+' | '?' | '.' | '^' | '$' => Ok(AST::Char(c)),
         _ => Err(InvalidEscape(pos, c)),
     }
 }
@@ -91,6 +96,8 @@ pub fn parse(expr: &str) -> Result<AST, ParserError> {
         seq_or: Vec<AST>,
     }
 
+    let mut is_hat = false;
+    let mut is_dollar = false;
     let mut context = Context::default();
     let mut stack = vec![];
     let mut state = ParseState::Char;
@@ -125,6 +132,21 @@ pub fn parse(expr: &str) -> Result<AST, ParserError> {
                     let prev_quantifier = take(&mut context.seq_quantifier);
                     context.seq_or.push(AST::Seq(prev_quantifier));
                 }
+                '.' => context.seq_quantifier.push(AST::AnyChar),
+                '^' => {
+                    if i > 0 {
+                        return Err(ParserError::InvalidHat);
+                    } else {
+                        is_hat = true;
+                    }
+                }
+                '$' => {
+                    if i < expr.len() - 1 {
+                        return Err(ParserError::InvalidDollar);
+                    } else {
+                        is_dollar = true;
+                    }
+                }
                 '\\' => {
                     state = ParseState::Escape;
                 }
@@ -147,6 +169,12 @@ pub fn parse(expr: &str) -> Result<AST, ParserError> {
     }
 
     if let Some(ast) = fold_or(context.seq_or) {
+        let ast = if is_hat { AST::Hat(Box::new(ast)) } else { ast };
+        let ast = if is_dollar {
+            AST::Dollar(Box::new(ast))
+        } else {
+            ast
+        };
         Ok(ast)
     } else {
         Err(ParserError::Empty)
@@ -185,6 +213,24 @@ mod tests {
                     Box::new(AST::Seq(vec![AST::Char('c'), AST::Char('d')]))
                 ))
             )
+        );
+    }
+
+    #[test]
+    fn hat_dollar_case() {
+        let expr = "^a";
+
+        assert_eq!(
+            parse("^a").unwrap(),
+            AST::Hat(Box::new(AST::Seq(vec![AST::Char('a')]))),
+        );
+        assert_eq!(
+            parse("a$").unwrap(),
+            AST::Dollar(Box::new(AST::Seq(vec![AST::Char('a')]))),
+        );
+        assert_eq!(
+            parse("^a$").unwrap(),
+            AST::Dollar(Box::new(AST::Hat(Box::new(AST::Seq(vec![AST::Char('a')]))))),
         );
     }
 }

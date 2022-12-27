@@ -55,6 +55,28 @@ fn eval_depth(
                     return Ok(false);
                 }
             }
+            Instruction::AnyChar => {
+                if let Some(_) = line.get(sp) {
+                    pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                    sp = sp.checked_add(1).ok_or(EvalError::SPOverFlow)?;
+                } else {
+                    return Ok(false);
+                }
+            }
+            Instruction::IsHead => {
+                if sp == 0 {
+                    pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                } else {
+                    return Ok(false);
+                }
+            }
+            Instruction::IsTail => {
+                if sp == line.len() {
+                    pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                } else {
+                    return Ok(false);
+                }
+            }
             Instruction::Match => return Ok(true),
             Instruction::Jump(i) => {
                 pc = *i;
