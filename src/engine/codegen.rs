@@ -163,8 +163,11 @@ impl Generator {
     fn gen_skip_head(&mut self) -> Result<(), CodeGenError> {
         assert_eq!(self.pc, 0);
         self.instructions.push(Instruction::Split(3, 1));
+        self.inc_pc()?;
         self.instructions.push(Instruction::AnyChar);
+        self.inc_pc()?;
         self.instructions.push(Instruction::Jump(0));
+        self.inc_pc()?;
 
         Ok(())
     }
@@ -176,25 +179,5 @@ impl Generator {
         self.inc_pc()?;
 
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn simple_code_gen() {
-        let ast = AST::Seq(vec![AST::Char('a'), AST::Char('b')]);
-        let mut gen = Generator::new();
-        gen.gen_code(&ast).unwrap();
-        assert_eq!(
-            gen.instructions,
-            vec![
-                Instruction::Char('a'),
-                Instruction::Char('b'),
-                Instruction::Match
-            ]
-        );
     }
 }
