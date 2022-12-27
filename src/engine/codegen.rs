@@ -149,13 +149,19 @@ impl Generator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::Instruction::Match;
 
     #[test]
     fn simple_code_gen() {
         let ast = AST::Seq(vec![AST::Char('a'), AST::Char('b')]);
         let mut gen = Generator::new();
         gen.gen_code(&ast).unwrap();
-        assert_eq!(gen.instructions, vec![Char('a'), Char('b'), Match]);
+        assert_eq!(
+            gen.instructions,
+            vec![
+                Instruction::Char('a'),
+                Instruction::Char('b'),
+                Instruction::Match
+            ]
+        );
     }
 }

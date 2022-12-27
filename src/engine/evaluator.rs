@@ -44,10 +44,13 @@ fn eval_depth(
 
         match next {
             Instruction::Char(c) => {
-                let sp_c = line.get(sp).ok_or(EvalError::SPOverFlow)?;
-                if *c == *sp_c {
-                    pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
-                    sp = sp.checked_add(1).ok_or(EvalError::SPOverFlow)?;
+                if let Some(sp_c) = line.get(sp) {
+                    if *c == *sp_c {
+                        pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                        sp = sp.checked_add(1).ok_or(EvalError::SPOverFlow)?;
+                    } else {
+                        return Ok(false);
+                    }
                 } else {
                     return Ok(false);
                 }
