@@ -1,4 +1,5 @@
 use crate::engine::{Code, Instruction};
+use std::collections::VecDeque;
 use std::fmt::Display;
 
 pub fn eval(code: &Code, line: &[char], is_depth: bool) -> Result<bool, EvalError> {
@@ -102,5 +103,69 @@ fn eval_width(
     mut pc: usize,
     mut sp: usize,
 ) -> Result<bool, EvalError> {
-    todo!()
+    let mut queue = VecDeque::new();
+    queue.push_back((pc, sp));
+
+    loop {
+        if let Some((mut pc, mut sp)) = queue.pop_front() {
+            let matched = loop {
+                let next = inst.get(pc).ok_or(EvalError::InvalidPC)?;
+
+                match next {
+                    Instruction::Char(c) => {
+                        if let Some(sp_c) = line.get(sp) {
+                            if *c == *sp_c {
+                                pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                                sp = sp.checked_add(1).ok_or(EvalError::SPOverFlow)?;
+                            } else {
+                                break false;
+                            }
+                        } else {
+                            break false;
+                        }
+                    }
+                    Instruction::AnyChar => {
+                        if let Some(_) = line.get(sp) {
+                            pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                            sp = sp.checked_add(1).ok_or(EvalError::SPOverFlow)?;
+                        } else {
+                            break false;
+                        }
+                    }
+                    Instruction::IsHead => {
+                        if sp == 0 {
+                            pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                        } else {
+                            break false;
+                        }
+                    }
+                    Instruction::IsTail => {
+                        if sp == line.len() {
+                            pc = pc.checked_add(1).ok_or(EvalError::PCOverFlow)?;
+                        } else {
+                            break false;
+                        }
+                    }
+                    Instruction::Match => break true,
+                    Instruction::Jump(i) => {
+                        pc = *i;
+                    }
+                    Instruction::Split(branch1, branch2) => {
+                        queue.push_back((*branch1, sp));
+                        queue.push_back((*branch2, sp));
+                        break false;
+                    }
+                    Instruction::Nop => {
+                        return Err(EvalError::AttemptNop);
+                    }
+                }
+            };
+
+            if matched {
+                return Ok(true);
+            }
+        } else {
+            return Ok(false);
+        }
+    }
 }
