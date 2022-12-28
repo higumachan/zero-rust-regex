@@ -168,6 +168,8 @@ impl Generator {
         self.inc_pc()?;
         self.instructions.push(Instruction::Jump(0));
         self.inc_pc()?;
+        self.instructions.push(Instruction::Start);
+        self.inc_pc()?;
 
         Ok(())
     }

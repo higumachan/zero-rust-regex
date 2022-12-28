@@ -1,4 +1,4 @@
-use crate::engine::evaluator::eval;
+use crate::engine::evaluator::{eval, eval_with_pattern};
 use crate::engine::{codegen, parser};
 use crate::helper::DynError;
 
@@ -12,6 +12,21 @@ pub fn do_matching(expr: &str, line: &str, is_depth: bool) -> Result<bool, DynEr
     let line: Vec<char> = line.chars().collect();
 
     Ok(eval(&code, &line, is_depth)?)
+}
+
+pub fn do_matching_with_pattern(
+    expr: &str,
+    line: &str,
+    is_depth: bool,
+) -> Result<Option<Vec<char>>, DynError> {
+    let ast = parser::parse(expr)?;
+    let code = codegen::get_code(&ast)?;
+
+    let line: Vec<char> = line.chars().collect();
+
+    let pattern_range = eval_with_pattern(&code, &line, is_depth)?;
+
+    Ok(pattern_range.map(move |r| line[r].to_vec()))
 }
 
 #[cfg(test)]
@@ -108,5 +123,17 @@ mod tests {
         let code = codegen::get_code(&ast).unwrap();
         println!("{}", code);
         assert!(do_matching(expr, "aaaaaaaaaa", false).unwrap());
+    }
+
+    #[test]
+    fn with_pattern() {
+        let expr = "ab.";
+        let ast = parser::parse(expr).unwrap();
+        let code = codegen::get_code(&ast).unwrap();
+        println!("{}", code);
+        assert_eq!(
+            do_matching_with_pattern(expr, "aabcabd", true).unwrap(),
+            Some(vec!['a', 'b', 'c'])
+        );
     }
 }

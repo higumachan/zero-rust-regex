@@ -26,6 +26,7 @@ impl Code {
 pub enum Instruction {
     Char(char),
     AnyChar,
+    Start,
     IsHead,
     IsTail,
     Match,
@@ -37,12 +38,13 @@ pub enum Instruction {
 impl Display for Instruction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Instruction::Char(c) => write!(f, "char {} ", c),
-            Instruction::AnyChar => write!(f, "anychar"),
-            Instruction::IsHead => write!(f, "ishead"),
-            Instruction::IsTail => write!(f, "istail"),
-            Instruction::Match => write!(f, "match"),
-            Instruction::Jump(i) => write!(f, "jump {:>04}", i),
+            Instruction::Char(c) => write!(f, "Char {} ", c),
+            Instruction::AnyChar => write!(f, "Anychar"),
+            Instruction::Start => write!(f, "Start"),
+            Instruction::IsHead => write!(f, "Ishead"),
+            Instruction::IsTail => write!(f, "Istail"),
+            Instruction::Match => write!(f, "Match"),
+            Instruction::Jump(i) => write!(f, "Jump {:>04}", i),
             Instruction::Split(i, j) => write!(f, "Split {:>04}, {:>04}", i, j),
             Instruction::Nop => write!(f, "nop"),
         }
