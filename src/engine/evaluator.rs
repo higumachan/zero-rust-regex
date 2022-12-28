@@ -110,11 +110,21 @@ fn eval_depth_with_pattern(
                 pc = *i;
             }
             Instruction::Split(branch1, branch2) => {
-                return if let Some(r) = eval_depth_with_pattern(inst, line, *branch1, sp, ssp)? {
-                    Ok(Some(r))
-                } else {
-                    eval_depth_with_pattern(inst, line, *branch2, sp, ssp)
-                }
+                let a = eval_depth_with_pattern(inst, line, *branch1, sp, ssp)?;
+                let b = eval_depth_with_pattern(inst, line, *branch2, sp, ssp)?;
+
+                return Ok(match (a, b) {
+                    (Some(a), Some(b)) => {
+                        if a.len() >= b.len() {
+                            Some(a)
+                        } else {
+                            Some(b)
+                        }
+                    }
+                    (None, Some(b)) => Some(b),
+                    (Some(a), None) => Some(a),
+                    (None, None) => None,
+                });
             }
             Instruction::Nop => {
                 return Err(EvalError::AttemptNop);

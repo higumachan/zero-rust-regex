@@ -127,13 +127,23 @@ mod tests {
 
     #[test]
     fn with_pattern() {
-        let expr = "ab.";
+        assert_eq!(
+            do_matching_with_pattern("ab.", "aabcabd", true).unwrap(),
+            Some(vec!['a', 'b', 'c'])
+        );
+
+        let expr = "(ab)*";
         let ast = parser::parse(expr).unwrap();
         let code = codegen::get_code(&ast).unwrap();
         println!("{}", code);
         assert_eq!(
-            do_matching_with_pattern(expr, "aabcabd", true).unwrap(),
-            Some(vec!['a', 'b', 'c'])
+            do_matching_with_pattern("(ab)*", "cababc", true).unwrap(),
+            Some(vec!['a', 'b', 'a', 'b'])
+        );
+
+        assert_eq!(
+            do_matching_with_pattern("(ab)*c?", "cababc", true).unwrap(),
+            Some(vec!['a', 'b', 'a', 'b', 'c'])
         );
     }
 }
