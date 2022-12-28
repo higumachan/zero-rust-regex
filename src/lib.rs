@@ -91,4 +91,22 @@ mod tests {
     fn fail_case_002() {
         assert!(do_matching("def$", "abcdef", true).unwrap());
     }
+
+    #[test]
+    fn benchmark_small_case() {
+        let expr = "a?a?aa";
+        let ast = parser::parse(expr).unwrap();
+        let code = codegen::get_code(&ast).unwrap();
+        println!("{}", code);
+        assert!(do_matching(expr, "aa", true).unwrap());
+    }
+
+    #[test]
+    fn benchmark_big_case() {
+        let expr = "a?a?a?a?a?a?a?a?a?a?aaaaaaaaaa";
+        let ast = parser::parse(expr).unwrap();
+        let code = codegen::get_code(&ast).unwrap();
+        println!("{}", code);
+        assert!(do_matching(expr, "aaaaaaaaaa", false).unwrap());
+    }
 }

@@ -13,7 +13,7 @@ const INPUTS: &[(&str, &str, &str)] = &[
 fn depth_first(c: &mut Criterion) {
     let mut g = c.benchmark_group("Depth First");
 
-    g.measurement_time(Duration::from_secs(12));
+    g.measurement_time(Duration::from_secs(2));
 
     for i in INPUTS {
         g.bench_with_input(i.0, &(i.1, i.2), |b, args| {
@@ -22,5 +22,17 @@ fn depth_first(c: &mut Criterion) {
     }
 }
 
-criterion_group!(benches, depth_first);
+fn width_first(c: &mut Criterion) {
+    let mut g = c.benchmark_group("Width First");
+
+    g.measurement_time(Duration::from_secs(2));
+
+    for i in INPUTS {
+        g.bench_with_input(i.0, &(i.1, i.2), |b, args| {
+            b.iter(|| do_matching(args.0, args.1, false));
+        });
+    }
+}
+
+criterion_group!(benches, depth_first, width_first);
 criterion_main!(benches);
